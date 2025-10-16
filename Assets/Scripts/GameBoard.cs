@@ -53,7 +53,7 @@ public class GameBoard : MonoBehaviour
                 //where to spawn the pebble
                 Vector2 position = new Vector2(x - offsetX, y - offsetY);
 
-                if (arrayLayout.rows[y].row[x])
+                if (arrayLayout.rows[0].row[0])
                 {
                     gameBoard[x, y] = new Node(false, null);
 
@@ -71,7 +71,81 @@ public class GameBoard : MonoBehaviour
 
             }
         }
-        CheckMatch();
+
+        if (CheckMatch())
+        {
+            Debug.Log("Already have matches, resetting board");
+            
+        }
+        else
+        {
+            Debug.Log("No matches found, board is ready");
+        }
+    }
+
+    bool FreshBoardChecker()
+    {
+        bool matchFound = false;
+
+        List<Pebbles> pebblesToReplace = new();
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (gameBoard[x, y].isUseable)
+                {
+                    Pebbles pebble = gameBoard[x, y].pebble.GetComponent<Pebbles>();
+                    if (!pebble.isMatched)
+                    {
+                        GameResult matchedPebbles = isConnected(pebble);
+                        if (matchedPebbles.connectedPebbles.Count >= 3)
+                        {
+                            pebblesToReplace.AddRange(matchedPebbles.connectedPebbles);
+                            foreach (Pebbles p in matchedPebbles.connectedPebbles)
+                            {
+                                p.isMatched = true;
+                            }
+                            matchFound = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach (Pebbles p in pebblesToReplace)
+        {
+            //get pebble position
+            int x = p.xIndex;
+            int y = p.yIndex;
+            
+            //remove pebble
+            Destroy(gameBoard[x, y].pebble);
+
+            //spawn new pebble in old pebble place
+            int randomIndex = Random.Range(0, pebblePrefab.Length);
+            Vector2 position = new Vector2(x - offsetX, y - offsetY);
+
+            GameObject newPebble = Instantiate(pebblePrefab[randomIndex], position, Quaternion.identity);
+
+            newPebble.GetComponent<Pebbles>().SetIndicies(x, y);
+            gameBoard[x, y].pebble = newPebble;
+            p.isMatched = false;
+        }
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (gameBoard[x, y].isUseable && gameBoard[x, y].pebble != null)
+                {
+                    Pebbles pebble = gameBoard[x, y].pebble.GetComponent<Pebbles>();
+                    pebble.isMatched = false;
+                }
+            }
+        }
+
+        return matchFound;
     }
 
     public bool CheckMatch()
@@ -94,6 +168,7 @@ public class GameBoard : MonoBehaviour
                     {
 
                         GameResult matchedPebbles = isConnected(pebble);
+
                         if (matchedPebbles.connectedPebbles.Count >= 3)
                         {
                             pebblesToRemove.AddRange(matchedPebbles.connectedPebbles);
@@ -128,13 +203,12 @@ public class GameBoard : MonoBehaviour
         CheckDirection(pebble, new Vector2Int(1, 0), connectedPebbles);
 
 
-
-
-
         //check left--------------------------------------------------------------------------------------------------------------------------
         CheckDirection(pebble, new Vector2Int(-1, 0), connectedPebbles);
 
-        if (connectedPebbles.Count >= 3)
+
+
+        if (connectedPebbles.Count == 3)
         {
             //horizontal match present
             Debug.Log("Horizontal match found of " + connectedPebbles.Count + " pebbles of type " + pebbleType);
@@ -167,7 +241,7 @@ public class GameBoard : MonoBehaviour
         //check down--------------------------------------------------------------------------------------------------------------------------
         CheckDirection(pebble, new Vector2Int(0, -1), connectedPebbles);
 
-        if (connectedPebbles.Count >= 3)
+        if (connectedPebbles.Count == 3)
         {
             //Vertical match present
             Debug.Log("Vertical match found of " + connectedPebbles.Count + " pebbles of type " + pebbleType);
