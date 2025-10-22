@@ -376,8 +376,8 @@ MonoBehaviour:
   pebblePrefab:
   - {fileID: 636215505878087766, guid: eaf65cb9fb02fa043afff275ea3bb043, type: 3}
   - {fileID: 711087895253707977, guid: 820433887a9c5b84b8e3266a4fcffb1f, type: 3}
-  - {fileID: 1419502330427243709, guid: 90c555a6f40fed94c8ac979d33134b59, type: 3}
   - {fileID: 4385678047552468965, guid: c4c746f93a5c47b4fb20e82763dfa01b, type: 3}
+  - {fileID: 1419502330427243709, guid: 90c555a6f40fed94c8ac979d33134b59, type: 3}
   gameBoardGO: {fileID: 1491605984}
   arrayLayout:
     rows:
@@ -389,6 +389,9 @@ MonoBehaviour:
     - row: 000000000000
     - row: 000000000000
     - row: 000000000000
+  pebblesToDestroy: []
+  selectedPebble: {fileID: 0}
+  isProcessingSwap: 0
 --- !u!4 &1491605986
 Transform:
   m_ObjectHideFlags: 0

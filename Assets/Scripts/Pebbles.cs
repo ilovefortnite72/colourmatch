@@ -1,3 +1,5 @@
+using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Pebbles : MonoBehaviour
@@ -13,7 +15,7 @@ public class Pebbles : MonoBehaviour
     private Vector2 currentPos;
     private Vector2 targetPos;
 
-    
+
     public bool isMoving;
 
     //initializer
@@ -29,6 +31,34 @@ public class Pebbles : MonoBehaviour
         yIndex = _y;
     }
 
+    //move pebble to target position
+    public void MoveToTarget(Vector2 _tarPos)
+    {
+        StartCoroutine(MoveCoroutine(_tarPos));
+    }
+
+    private IEnumerator MoveCoroutine(Vector2 _tarPos)
+    {
+        isMoving = true;
+        float duration = 0.3f;
+
+        Vector2 startPos = transform.position;
+        float elapsed = 0f;
+
+
+        while (elapsed < duration)
+        {
+            float t = elapsed / duration;
+
+            transform.position = Vector2.Lerp(startPos, _tarPos, t);
+            elapsed += Time.deltaTime;
+
+            yield return null;
+        }
+        transform.position = _tarPos;
+
+        isMoving = false;
+    }
 }
 //colour of pebble
 public enum PebbleType

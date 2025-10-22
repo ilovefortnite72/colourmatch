@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -25,12 +26,41 @@ public class GameBoard : MonoBehaviour
 
     public GameResult gameResult;
 
+    public List<GameObject> pebblesToDestroy = new();
+
+    [SerializeField]
+    private Pebbles selectedPebble;
+
+    [SerializeField]
+    private bool isProcessingSwap;
+
+
 
     private void Awake()
     {
         instance = this;
     }
 
+    private void Update()
+    {
+        if(Input.GetMouseButtonDown(0))
+        {
+            Ray ray =  Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+            if(hit.collider != null && hit.collider.gameObject.GetComponent<Pebbles>())
+            {
+                if(isProcessingSwap)
+                {
+                    return;
+                }
+
+                Pebbles pebbles = hit.collider.gameObject.GetComponent<Pebbles>();
+                Debug.Log("Clicked on pebble: "+pebbles.gameObject);
+
+                SelectSquare(pebbles);
+            }
+        }
+    }
 
     void Start()
     {
@@ -39,7 +69,9 @@ public class GameBoard : MonoBehaviour
 
     void InitialiseBoard()
     {
+        DestroyPotions();
         gameBoard = new Node[width, height];
+
 
 
         offsetX = (float)(width - 1) / 2;
@@ -67,6 +99,7 @@ public class GameBoard : MonoBehaviour
 
                     pebble.GetComponent<Pebbles>().SetIndicies(x, y);
                     gameBoard[x, y] = new Node(true, pebble);
+                    pebblesToDestroy.Add(pebble);
                 }
 
             }
@@ -74,78 +107,26 @@ public class GameBoard : MonoBehaviour
 
         if (CheckMatch())
         {
-            Debug.Log("Already have matches, resetting board");
-            
+            Debug.Log("Reinitializing board to avoid starting matches");
+            InitialiseBoard();
         }
         else
         {
-            Debug.Log("No matches found, board is ready");
+            Debug.Log("Board initialized without starting matches");
         }
+
     }
 
-    bool FreshBoardChecker()
+    private void DestroyPotions()
     {
-        bool matchFound = false;
-
-        List<Pebbles> pebblesToReplace = new();
-
-        for (int x = 0; x < width; x++)
+        if (pebblesToDestroy != null)
         {
-            for (int y = 0; y < height; y++)
+            foreach (GameObject pebble in pebblesToDestroy)
             {
-                if (gameBoard[x, y].isUseable)
-                {
-                    Pebbles pebble = gameBoard[x, y].pebble.GetComponent<Pebbles>();
-                    if (!pebble.isMatched)
-                    {
-                        GameResult matchedPebbles = isConnected(pebble);
-                        if (matchedPebbles.connectedPebbles.Count >= 3)
-                        {
-                            pebblesToReplace.AddRange(matchedPebbles.connectedPebbles);
-                            foreach (Pebbles p in matchedPebbles.connectedPebbles)
-                            {
-                                p.isMatched = true;
-                            }
-                            matchFound = true;
-                        }
-                    }
-                }
+                Destroy(pebble);
             }
+            pebblesToDestroy.Clear();
         }
-
-        foreach (Pebbles p in pebblesToReplace)
-        {
-            //get pebble position
-            int x = p.xIndex;
-            int y = p.yIndex;
-            
-            //remove pebble
-            Destroy(gameBoard[x, y].pebble);
-
-            //spawn new pebble in old pebble place
-            int randomIndex = Random.Range(0, pebblePrefab.Length);
-            Vector2 position = new Vector2(x - offsetX, y - offsetY);
-
-            GameObject newPebble = Instantiate(pebblePrefab[randomIndex], position, Quaternion.identity);
-
-            newPebble.GetComponent<Pebbles>().SetIndicies(x, y);
-            gameBoard[x, y].pebble = newPebble;
-            p.isMatched = false;
-        }
-
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                if (gameBoard[x, y].isUseable && gameBoard[x, y].pebble != null)
-                {
-                    Pebbles pebble = gameBoard[x, y].pebble.GetComponent<Pebbles>();
-                    pebble.isMatched = false;
-                }
-            }
-        }
-
-        return matchFound;
     }
 
     public bool CheckMatch()
@@ -184,6 +165,7 @@ public class GameBoard : MonoBehaviour
                 }
             }
         }
+        print(matchFound);
         return matchFound;
     }
 
@@ -212,6 +194,7 @@ public class GameBoard : MonoBehaviour
         {
             //horizontal match present
             Debug.Log("Horizontal match found of " + connectedPebbles.Count + " pebbles of type " + pebbleType);
+
             return new GameResult
             {
                 connectedPebbles = connectedPebbles,
@@ -222,6 +205,7 @@ public class GameBoard : MonoBehaviour
         {
             //Long horizontal match present
             Debug.Log("Long Horizontal match found of " + connectedPebbles.Count + " pebbles of type " + pebbleType);
+
             return new GameResult
             {
                 connectedPebbles = connectedPebbles,
@@ -245,6 +229,7 @@ public class GameBoard : MonoBehaviour
         {
             //Vertical match present
             Debug.Log("Vertical match found of " + connectedPebbles.Count + " pebbles of type " + pebbleType);
+
             return new GameResult
             {
                 connectedPebbles = connectedPebbles,
@@ -255,6 +240,7 @@ public class GameBoard : MonoBehaviour
         {
             //Long Vertical match present
             Debug.Log("Long Vertical match found of " + connectedPebbles.Count + " pebbles of type " + pebbleType);
+
             return new GameResult
             {
                 connectedPebbles = connectedPebbles,
@@ -306,9 +292,90 @@ public class GameBoard : MonoBehaviour
 
 
 
-    
-}
 
+    //swapping potions logic
+
+    public void SelectSquare(Pebbles _pebbles)
+    {
+        if (selectedPebble == null)
+        {
+            Debug.Log("Selected pebble at (" + _pebbles.xIndex + ", " + _pebbles.yIndex + ")");
+            selectedPebble = _pebbles;
+        }
+        else if (selectedPebble == _pebbles)
+        {
+            selectedPebble = null;
+        }
+        else if (selectedPebble != _pebbles)
+        {
+            SwapPebble(selectedPebble, _pebbles);
+            selectedPebble = null;
+        }
+
+    }
+
+    private void SwapPebble(Pebbles _currentPebble, Pebbles _targetPebble)
+    {
+        if (!isAdjacent(_currentPebble, _targetPebble) || isProcessingSwap)
+        {
+            return;
+        }
+
+        DoSwap(_currentPebble, _targetPebble);
+
+        isProcessingSwap = true;
+
+        StartCoroutine(ExecuteMatch(_currentPebble, _targetPebble));
+
+    }
+
+    private IEnumerator ExecuteMatch(Pebbles _currentPebble, Pebbles _targetPebble)
+    {
+        bool matchFound = CheckMatch();
+
+        if (!matchFound)
+        {
+            //no match found, swap back
+            yield return new WaitForSeconds(0.5f);
+            DoSwap(_currentPebble, _targetPebble);
+            isProcessingSwap = false;
+            yield break;
+        }
+        yield return new WaitForSeconds(0.5f);
+
+        isProcessingSwap = false;
+    }
+
+    private void DoSwap(Pebbles _currentPebble, Pebbles _targetPebble)
+    {
+        //swap in array
+        GameObject temp = gameBoard[_currentPebble.xIndex, _currentPebble.yIndex].pebble;
+        gameBoard[_currentPebble.xIndex, _currentPebble.yIndex].pebble = gameBoard[_targetPebble.xIndex, _targetPebble.yIndex].pebble;
+        gameBoard[_targetPebble.xIndex, _targetPebble.yIndex].pebble = temp;
+
+        //swap indicies
+        int tempX = _currentPebble.xIndex;
+        int tempY = _currentPebble.yIndex;
+        _currentPebble.xIndex = _targetPebble.xIndex;
+        _currentPebble.yIndex = _targetPebble.yIndex;
+        _targetPebble.xIndex = tempX;
+        _targetPebble.yIndex = tempY;
+
+        //call coroutine in pebble script to visibly move them
+        _currentPebble.MoveToTarget(gameBoard[_targetPebble.xIndex, _targetPebble.yIndex].pebble.transform.position);
+        _targetPebble.MoveToTarget(gameBoard[_currentPebble.xIndex, _currentPebble.yIndex].pebble.transform.position);
+
+
+    }
+
+    
+     
+
+    private bool isAdjacent(Pebbles _currentPebble, Pebbles _targetPebble)
+    {
+        return Mathf.Abs(_currentPebble.xIndex - _targetPebble.xIndex) + Mathf.Abs(_currentPebble.yIndex - _targetPebble.yIndex) == 1;
+    }
+}
 
 public class GameResult
 {
