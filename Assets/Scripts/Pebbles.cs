@@ -40,7 +40,7 @@ public class Pebbles : MonoBehaviour
     private IEnumerator MoveCoroutine(Vector2 _tarPos)
     {
         isMoving = true;
-        float duration = 0.3f;
+        float duration = 1f;
 
         Vector2 startPos = transform.position;
         float elapsed = 0f;
