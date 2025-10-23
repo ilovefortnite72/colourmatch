@@ -197,75 +197,65 @@ public class GameBoard : MonoBehaviour
             gameBoard[_xIndex, _yIndex] = new Node(true, null);
         }
 
-        for(int x = 0; x < width; x++)
+        for(int _xIndex = 0; _xIndex < width; _xIndex++)
         {
-            for(int y = 0; y < height; y++)
+            CollapseColumn(_xIndex);
+            RefillColumn(_xIndex);
+        }
+    }
+
+    private void RefillColumn(int _xIndex)
+    {
+        for (int _yIndex = 0; _yIndex < height; _yIndex++)
+        {
+            if (gameBoard[_xIndex, _yIndex].pebble == null)
             {
-                if(gameBoard[x,y].pebble == null)
+                // Pick random prefab and spawn just above the board
+                int randomIndex = Random.Range(0, pebblePrefab.Length);
+                Vector2 spawnPos = new Vector2(_xIndex - offsetX, height - offsetY + 1f); // +1 for nice fall
+                GameObject newPebble = Instantiate(pebblePrefab[randomIndex], spawnPos, Quaternion.identity);
+
+                Pebbles pebbleScript = newPebble.GetComponent<Pebbles>();
+                pebbleScript.SetIndicies(_xIndex, _yIndex);
+
+                // Update board
+                gameBoard[_xIndex, _yIndex] = new Node(true, newPebble);
+
+                // Move pebble visually into position
+                Vector3 targetPos = new Vector3(_xIndex - offsetX, _yIndex - offsetY, newPebble.transform.position.z);
+                pebbleScript.MoveToTarget(targetPos);
+            }
+        }
+    }
+
+    private void CollapseColumn(int _xIndex)
+    {
+        for (int _yIndex = 0; _yIndex < height; _yIndex++)
+        {
+            // If this cell is empty, look for a pebble above to pull down
+            if (gameBoard[_xIndex, _yIndex].pebble == null)
+            {
+                for (int _aboveY = _yIndex + 1; _aboveY < height; _aboveY++)
                 {
-                    RefillNode(x, y);
+                    if (gameBoard[_xIndex, _aboveY].pebble != null)
+                    {
+                        Pebbles fallingPebble = gameBoard[_xIndex, _aboveY].pebble.GetComponent<Pebbles>();
+
+                        // Calculate target position in world space
+                        Vector3 targetPos = new Vector3(_xIndex - offsetX, _yIndex - offsetY, fallingPebble.transform.position.z);
+                        fallingPebble.MoveToTarget(targetPos);
+
+                        // Update pebble indices
+                        fallingPebble.SetIndicies(_xIndex, _yIndex);
+
+                        // Update grid array
+                        gameBoard[_xIndex, _yIndex] = new Node(true, fallingPebble.gameObject);
+                        gameBoard[_xIndex, _aboveY] = new Node(true, null);
+                        break; // Done with this slot
+                    }
                 }
-                    
             }
         }
-    }
-
-    private void RefillNode(int x, int y)
-    {
-        int yOffset = 1;
-        //check if there are empty nodes above current node or top of board
-        while (y + yOffset < height && gameBoard[x,y + yOffset].pebble == null)
-        {
-            yOffset++;
-        }
-        //move to correct position
-        if (y + yOffset < height && gameBoard[x, y + yOffset].pebble != null)
-        {
-            Pebbles pebbleAbove = gameBoard[x, y + yOffset].pebble.GetComponent<Pebbles>();
-
-            Vector3 targetpos = new Vector3(x - offsetX, y - offsetY, pebbleAbove.transform.position.z);
-            //update position
-            pebbleAbove.MoveToTarget(targetpos);
-            //update indicies
-            pebbleAbove.SetIndicies(x, y);
-            //update gameboard array
-            gameBoard[x,y] = gameBoard[x, y + yOffset];
-            gameBoard[x, y + yOffset] = new Node(true, null);
-
-        }
-        if(y+yOffset == height)
-        {
-            SpawnPotionAtTop(x);
-        }
-    }
-
-    private void SpawnPotionAtTop(int x)
-    {
-        int index = FindIndexOfLowestNull(x);
-        int locationToMove = 9 - index;
-
-        int randomIndex = Random.Range(0, pebblePrefab.Length);
-
-        GameObject newPebble = Instantiate(pebblePrefab[randomIndex], new Vector2(x - offsetX, (height - offsetY)), Quaternion.identity);
-
-        newPebble.GetComponent<Pebbles>().SetIndicies(x, index);
-
-        gameBoard[x, index] = new Node(true, newPebble);
-        Vector3 targetPos = new Vector3(newPebble.transform.position.x, newPebble.transform.position.y, -locationToMove);
-        newPebble.GetComponent<Pebbles>().MoveToTarget(targetPos);
-    }
-
-    private int FindIndexOfLowestNull(int x)
-    {
-        int lowestNull = 99;
-        for(int y = 9; y >=0 ; y--)
-        {
-            if(gameBoard[x,y].pebble == null)
-            {
-                lowestNull = y;
-            }
-        }
-        return lowestNull;
     }
 
     GameResult isConnected(Pebbles pebble)
