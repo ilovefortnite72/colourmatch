@@ -214,12 +214,12 @@ public class GameBoard : MonoBehaviour
     {
         int yOffset = 1;
         //check if there are empty nodes above current node or top of board
-        while (yOffset + yOffset < height && gameBoard[x,y + yOffset].pebble == null)
+        while (y + yOffset < height && gameBoard[x,y + yOffset].pebble == null)
         {
             yOffset++;
         }
         //move to correct position
-        if (yOffset + yOffset < height && gameBoard[x, y + yOffset].pebble != null)
+        if (y + yOffset < height && gameBoard[x, y + yOffset].pebble != null)
         {
             Pebbles pebbleAbove = gameBoard[x, y + yOffset].pebble.GetComponent<Pebbles>();
 
@@ -419,7 +419,7 @@ public class GameBoard : MonoBehaviour
 
     private IEnumerator ExecuteMatch(Pebbles _currentPebble, Pebbles _targetPebble)
     {
-        bool matchFound = CheckMatch();
+        bool matchFound = CheckMatch(true);
         if (!matchFound)
         {
             //no match found, swap back
