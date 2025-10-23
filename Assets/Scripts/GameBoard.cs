@@ -2,6 +2,8 @@ using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+
+using UnityEditor;
 using UnityEngine;
 
 public class GameBoard : MonoBehaviour
@@ -55,7 +57,7 @@ public class GameBoard : MonoBehaviour
                 }
 
                 Pebbles pebbles = hit.collider.gameObject.GetComponent<Pebbles>();
-                Debug.Log("Clicked on pebble: "+pebbles.gameObject);
+                
 
                 SelectSquare(pebbles);
             }
@@ -69,7 +71,7 @@ public class GameBoard : MonoBehaviour
 
     void InitialiseBoard()
     {
-        DestroyPotions();
+        DestroyPebbles();
         gameBoard = new Node[width, height];
 
 
@@ -96,28 +98,20 @@ public class GameBoard : MonoBehaviour
                     int randomIndex = Random.Range(0, pebblePrefab.Length);
                     //spawn pebble at random position
                     GameObject pebble = Instantiate(pebblePrefab[randomIndex], position, Quaternion.identity);
-
                     pebble.GetComponent<Pebbles>().SetIndicies(x, y);
                     gameBoard[x, y] = new Node(true, pebble);
                     pebblesToDestroy.Add(pebble);
+                    
                 }
 
             }
         }
 
-        if (CheckMatch())
-        {
-            Debug.Log("Reinitializing board to avoid starting matches");
-            InitialiseBoard();
-        }
-        else
-        {
-            Debug.Log("Board initialized without starting matches");
-        }
+        
 
     }
 
-    private void DestroyPotions()
+    private void DestroyPebbles()
     {
         if (pebblesToDestroy != null)
         {
@@ -126,15 +120,25 @@ public class GameBoard : MonoBehaviour
                 Destroy(pebble);
             }
             pebblesToDestroy.Clear();
+            Debug.Log(pebblesToDestroy.Count);
         }
     }
 
-    public bool CheckMatch()
+    public bool CheckMatch(bool _executeAction)
     {
-        Debug.Log("Checking for matches");
+        
         bool matchFound = false;
 
         List<Pebbles> pebblesToRemove = new();
+
+        foreach(Node nodePebble in gameBoard)
+        {
+            if(nodePebble.pebble != null)
+            {
+                nodePebble.pebble.GetComponent<Pebbles>().isMatched = false;
+            }
+        }
+
 
         for (int x = 0; x < width; x++)
         {
@@ -165,21 +169,112 @@ public class GameBoard : MonoBehaviour
                 }
             }
         }
-        print(matchFound);
+        if (_executeAction)
+        {
+            foreach(Pebbles pebbles in pebblesToRemove)
+            {
+                pebbles.isMatched = false;
+            }
+            RemoveRefill(pebblesToRemove);
+
+            if (CheckMatch(false))
+            {
+                CheckMatch(true);
+            }
+        }
         return matchFound;
     }
 
+    private void RemoveRefill(List<Pebbles>pebblesToRemove)
+    {
+        foreach(Pebbles pebbles in pebblesToRemove)
+        {
+            int _xIndex = pebbles.xIndex;
+            int _yIndex = pebbles.yIndex;
+
+            Destroy(pebbles.gameObject);
+
+            gameBoard[_xIndex, _yIndex] = new Node(true, null);
+        }
+
+        for(int x = 0; x < width; x++)
+        {
+            for(int y = 0; y < height; y++)
+            {
+                if(gameBoard[x,y].pebble == null)
+                {
+                    RefillNode(x, y);
+                }
+                    
+            }
+        }
+    }
+
+    private void RefillNode(int x, int y)
+    {
+        int yOffset = 1;
+        //check if there are empty nodes above current node or top of board
+        while (yOffset + yOffset < height && gameBoard[x,y + yOffset].pebble == null)
+        {
+            yOffset++;
+        }
+        //move to correct position
+        if (yOffset + yOffset < height && gameBoard[x, y + yOffset].pebble != null)
+        {
+            Pebbles pebbleAbove = gameBoard[x, y + yOffset].pebble.GetComponent<Pebbles>();
+
+            Vector3 targetpos = new Vector3(x - offsetX, y - offsetY, pebbleAbove.transform.position.z);
+            //update position
+            pebbleAbove.MoveToTarget(targetpos);
+            //update indicies
+            pebbleAbove.SetIndicies(x, y);
+            //update gameboard array
+            gameBoard[x,y] = gameBoard[x, y + yOffset];
+            gameBoard[x, y + yOffset] = new Node(true, null);
+
+        }
+        if(y+yOffset == height)
+        {
+            SpawnPotionAtTop(x);
+        }
+    }
+
+    private void SpawnPotionAtTop(int x)
+    {
+        int index = FindIndexOfLowestNull(x);
+        int locationToMove = 9 - index;
+
+        int randomIndex = Random.Range(0, pebblePrefab.Length);
+
+        GameObject newPebble = Instantiate(pebblePrefab[randomIndex], new Vector2(x - offsetX, (height - offsetY)), Quaternion.identity);
+
+        newPebble.GetComponent<Pebbles>().SetIndicies(x, index);
+
+        gameBoard[x, index] = new Node(true, newPebble);
+        Vector3 targetPos = new Vector3(newPebble.transform.position.x, newPebble.transform.position.y, -locationToMove);
+        newPebble.GetComponent<Pebbles>().MoveToTarget(targetPos);
+    }
+
+    private int FindIndexOfLowestNull(int x)
+    {
+        int lowestNull = 99;
+        for(int y = 9; y >=0 ; y--)
+        {
+            if(gameBoard[x,y].pebble == null)
+            {
+                lowestNull = y;
+            }
+        }
+        return lowestNull;
+    }
 
     GameResult isConnected(Pebbles pebble)
     {
+
         List<Pebbles> connectedPebbles = new();
         PebbleType pebbleType = pebble.pebbleType;
 
-
         connectedPebbles.Add(pebble);
-
-
-
 
         //check right--------------------------------------------------------------------------------------------------------------------------
         CheckDirection(pebble, new Vector2Int(1, 0), connectedPebbles);
@@ -193,7 +288,7 @@ public class GameBoard : MonoBehaviour
         if (connectedPebbles.Count == 3)
         {
             //horizontal match present
-            Debug.Log("Horizontal match found of " + connectedPebbles.Count + " pebbles of type " + pebbleType);
+            
 
             return new GameResult
             {
@@ -204,7 +299,7 @@ public class GameBoard : MonoBehaviour
         else if (connectedPebbles.Count > 3)
         {
             //Long horizontal match present
-            Debug.Log("Long Horizontal match found of " + connectedPebbles.Count + " pebbles of type " + pebbleType);
+            
 
             return new GameResult
             {
@@ -228,7 +323,7 @@ public class GameBoard : MonoBehaviour
         if (connectedPebbles.Count == 3)
         {
             //Vertical match present
-            Debug.Log("Vertical match found of " + connectedPebbles.Count + " pebbles of type " + pebbleType);
+            
 
             return new GameResult
             {
@@ -239,7 +334,7 @@ public class GameBoard : MonoBehaviour
         else if (connectedPebbles.Count > 3)
         {
             //Long Vertical match present
-            Debug.Log("Long Vertical match found of " + connectedPebbles.Count + " pebbles of type " + pebbleType);
+            
 
             return new GameResult
             {
@@ -256,10 +351,7 @@ public class GameBoard : MonoBehaviour
             };
         }
 
-
     }
-
-
 
     void CheckDirection(Pebbles pebble, Vector2Int direction, List<Pebbles> connectedPebbles)
     {
@@ -290,16 +382,12 @@ public class GameBoard : MonoBehaviour
         }
     }
 
-
-
-
     //swapping potions logic
 
     public void SelectSquare(Pebbles _pebbles)
     {
         if (selectedPebble == null)
         {
-            Debug.Log("Selected pebble at (" + _pebbles.xIndex + ", " + _pebbles.yIndex + ")");
             selectedPebble = _pebbles;
         }
         else if (selectedPebble == _pebbles)
@@ -332,7 +420,6 @@ public class GameBoard : MonoBehaviour
     private IEnumerator ExecuteMatch(Pebbles _currentPebble, Pebbles _targetPebble)
     {
         bool matchFound = CheckMatch();
-
         if (!matchFound)
         {
             //no match found, swap back
