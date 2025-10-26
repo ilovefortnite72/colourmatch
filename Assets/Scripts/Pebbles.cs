@@ -50,7 +50,7 @@ public class Pebbles : MonoBehaviour
         {
             float t = elapsed / duration;
 
-            transform.position = Vector2.Lerp(startPos, _tarPos, t);
+            transform.position = Vector2.Lerp(startPos, _tarPos, t).normalized;
             elapsed += Time.deltaTime;
 
             yield return null;
