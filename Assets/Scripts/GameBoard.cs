@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices.ComTypes;
 using Unity.VisualScripting;
 
 using UnityEditor;
@@ -203,11 +204,12 @@ public class GameBoard : MonoBehaviour
             
             yield return new WaitForSeconds(0.5f);
             matchFound = CheckMatch();
+            //update score and moves
+            Debug.Log("Total Pebbles Removed: " + pebblesToRemove.Count);
+            GameManager.Instance.ExecuteTurn(pebblesToRemove.Count, _subtractMoves);
         }
         while (matchFound);
         
-        Debug.Log("Total Pebbles Removed: " + pebblesToRemove.Count);
-        GameManager.Instance.ExecuteTurn(pebblesToRemove.Count, _subtractMoves);
 
     }
 
@@ -426,8 +428,10 @@ public class GameBoard : MonoBehaviour
     //try swap pebbles if adjacent
     private void SwapPebble(Pebbles _currentPebble, Pebbles _targetPebble)
     {
+        //if not adjacent, return
         if (!isAdjacent(_currentPebble, _targetPebble) || isProcessingSwap)
         {
+
             return;
         }
 
@@ -486,6 +490,16 @@ public class GameBoard : MonoBehaviour
     {
         return Mathf.Abs(_currentPebble.xIndex - _targetPebble.xIndex) + Mathf.Abs(_currentPebble.yIndex - _targetPebble.yIndex) == 1;
     }
+
+    //public void Wiggle()
+    //{
+    //    StartCoroutine(WiggleCoroutine());
+    //}
+
+    //private IEnumerator WiggleCoroutine()
+    //{
+
+    //}
 }
 
 public class GameResult
