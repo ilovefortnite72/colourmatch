@@ -38,7 +38,7 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
         pointsText.text = "Points: " + points.ToString();
-        movesText.text = "Moves Left: " + moves.ToString();
+        movesText.text = "Moves: " + moves.ToString();
         winPointsText.text = "Goal: " + winPoints.ToString();
     }
 
@@ -48,9 +48,14 @@ public class GameManager : MonoBehaviour
         winPoints = _goal;
     }
 
-    public void ExecuteTurn(int _pointGain, bool _subtractMove)
+    public void UpdatePoints(int _pointsGain)
     {
-        points += _pointGain;
+        points += _pointsGain;
+    }
+
+    public void ExecuteTurn(bool _subtractMove)
+    {
+        
         if(_subtractMove)
         {
             moves--;
@@ -71,6 +76,7 @@ public class GameManager : MonoBehaviour
 
     }
 
+    
 
 
 

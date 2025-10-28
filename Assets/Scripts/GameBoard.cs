@@ -206,11 +206,11 @@ public class GameBoard : MonoBehaviour
             matchFound = CheckMatch();
             //update score and moves
             Debug.Log("Total Pebbles Removed: " + pebblesToRemove.Count);
-            GameManager.Instance.ExecuteTurn(pebblesToRemove.Count, _subtractMoves);
+            GameManager.Instance.UpdatePoints(pebblesToRemove.Count);
         }
         while (matchFound);
-        
 
+        GameManager.Instance.ExecuteTurn(_subtractMoves);
     }
 
     private void RemoveRefill(List<Pebbles>pebblesToRemove)
