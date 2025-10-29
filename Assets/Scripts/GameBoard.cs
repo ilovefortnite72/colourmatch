@@ -85,7 +85,7 @@ public class GameBoard : MonoBehaviour
 
         offsetX = (float)(width - 1) / 2;
         offsetY = (float)(height - 1) / 2;
-        Debug.Log("Offset X: " + offsetX + " Offset Y: " + offsetY);
+        
 
 
         for (int y = 0; y < height; y++)
@@ -99,7 +99,7 @@ public class GameBoard : MonoBehaviour
                     (y - offsetY) * pebbleSpacing);
                 
                 
-                if (arrayLayout.rows[0].row[0])
+                if (arrayLayout.rows[y].row[x])
                 {
                     gameBoard[x, y] = new Node(false, null);
 
@@ -236,7 +236,7 @@ public class GameBoard : MonoBehaviour
     {
         for (int _yIndex = 0; _yIndex < height; _yIndex++)
         {
-            if (gameBoard[_xIndex, _yIndex].pebble == null)
+            if (gameBoard[_xIndex, _yIndex].pebble == null && (gameBoard[_xIndex, _yIndex].isUseable))
             {
                 
                 int randomIndex = Random.Range(0, pebblePrefab.Length);
@@ -267,7 +267,7 @@ public class GameBoard : MonoBehaviour
     {
         for (int _yIndex = 0; _yIndex < height; _yIndex++)
         {
-            if (gameBoard[_xIndex, _yIndex].pebble == null)
+            if (gameBoard[_xIndex, _yIndex].pebble == null && (gameBoard[_xIndex, _yIndex].isUseable))
             {
                 for (int _aboveY = _yIndex + 1; _aboveY < height; _aboveY++)
                 {
