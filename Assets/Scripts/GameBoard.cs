@@ -152,7 +152,6 @@ public class GameBoard : MonoBehaviour
                 Destroy(pebble);
             }
             pebblesToDestroy.Clear();
-            
         }
     }
 
@@ -502,6 +501,7 @@ public class GameBoard : MonoBehaviour
 
 
     }
+
 
     
      
