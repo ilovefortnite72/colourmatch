@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.ComTypes;
 using Unity.VisualScripting;
-
+using UnityEngine.InputSystem;
 using UnityEditor;
 using UnityEngine;
 
@@ -52,7 +52,27 @@ public class GameBoard : MonoBehaviour
 
     private void Update()
     {
-        if(Input.GetMouseButtonDown(0))
+
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+        {
+            Vector2 touchPos = Touchscreen.current.primaryTouch.position.ReadValue();
+            Ray ray = Camera.main.ScreenPointToRay(new Vector3(touchPos.x, touchPos.y, 0f));
+            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+
+            if (hit.collider != null && hit.collider.gameObject.GetComponent<Pebbles>())
+            {
+                if (isProcessingSwap)
+                {
+                    return;
+                }
+
+                Pebbles pebbles = hit.collider.gameObject.GetComponent<Pebbles>();
+
+
+                SelectSquare(pebbles);
+            }
+        }
+        else if(Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
         {
             Ray ray =  Camera.main.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);

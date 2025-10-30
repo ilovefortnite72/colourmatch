@@ -85,14 +85,14 @@ public class GameManager : MonoBehaviour
     {
         isGameEnded = true;
         VicPanel.SetActive(true);
-        backPanel.SetActive(true);
+        
         Debug.Log("You Win!");
     }
     public void LoseGame()
     {
         isGameEnded = true;
         DefPanel.SetActive(true);
-        backPanel.SetActive(true);
+        
         Debug.Log("you Lose!");
     }
 
