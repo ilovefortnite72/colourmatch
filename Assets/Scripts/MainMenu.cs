@@ -49,7 +49,7 @@ public class MainMenu : MonoBehaviour
             string levelStr = btnName.Substring(prefix.Length);
             if(int.TryParse(levelStr, out int levelNum))
             {
-                SceneManager.LoadScene(levelNum + 1); // Assuming level scenes start from index 1
+                SceneManager.LoadScene(levelNum); // Assuming level scenes start from index 1
                 return levelNum;
             }
         }

@@ -1,0 +1,23 @@
+# ninja log v5
+72	9877	7838157838804198	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	c96a31332bacf1ef
+20	9955	7838157839919157	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	36a58d429129822d
+9884	13208	7838157872192621	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	ec281e73106f7b02
+390	12150	7838157863379048	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	f45913bbbc1217a
+1	10012	7838157835630375	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	ca1560376c966747
+53	10290	7838157836364748	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	a363f3c31afec785
+482	10285	7838157842275528	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	54aba93865e99c
+32	10287	7838157835515594	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	10f6340cd62a3bec
+711	10318	7838157835359660	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	66dae5b316d1953e
+12151	14297	7838157884221496	D:/github/SEASON3/ColourMatch/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6x5v3me3/obj/arm64-v8a/libgame.so	c46f6f7a21851e51
+13209	14522	7838157886306074	D:/github/SEASON3/ColourMatch/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6x5v3me3/obj/arm64-v8a/libswappywrapper.so	2fda08e46f9b693f
+899	34061	7838212913471421	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	f45913bbbc1217a
+887	34074	7838212913471421	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	54aba93865e99c
+767	34076	7838212913461495	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	10f6340cd62a3bec
+455	34078	7838212913471421	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	a363f3c31afec785
+549	34080	7838212913532260	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	36a58d429129822d
+750	34082	7838212913476381	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	c96a31332bacf1ef
+558	34084	7838212913466455	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	ca1560376c966747
+849	34086	7838212913461495	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	66dae5b316d1953e
+34086	37073	7838212945133839	D:/github/SEASON3/ColourMatch/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6x5v3me3/obj/arm64-v8a/libgame.so	c46f6f7a21851e51
+34062	37224	7838212946681164	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	ec281e73106f7b02
+37224	37631	7838212950753221	D:/github/SEASON3/ColourMatch/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6x5v3me3/obj/arm64-v8a/libswappywrapper.so	2fda08e46f9b693f

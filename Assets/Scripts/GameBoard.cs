@@ -6,6 +6,7 @@ using Unity.VisualScripting;
 using UnityEngine.InputSystem;
 using UnityEditor;
 using UnityEngine;
+using System.Globalization;
 
 public class GameBoard : MonoBehaviour
 {
@@ -17,8 +18,8 @@ public class GameBoard : MonoBehaviour
     public float offsetX;
     public float offsetY;
 
-    [SerializeField]
-    public float pebbleSpacing;
+    
+    public float pebbleSpacing = .4f;
 
     public GameObject[] pebblePrefab;
 
@@ -221,7 +222,7 @@ public class GameBoard : MonoBehaviour
             
             RemoveRefill(pebblesToRemove);
             
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(1f);
             matchFound = CheckMatch();
             //update score and moves
             Debug.Log("Total Pebbles Removed: " + pebblesToRemove.Count);
@@ -230,6 +231,7 @@ public class GameBoard : MonoBehaviour
         while (matchFound);
 
         GameManager.Instance.ExecuteTurn(_subtractMoves);
+        isProcessingSwap = false;
     }
 
     private void RemoveRefill(List<Pebbles>pebblesToRemove)
@@ -243,9 +245,10 @@ public class GameBoard : MonoBehaviour
 
             gameBoard[_xIndex, _yIndex] = new Node(true, null);
         }
-
+        
         for(int _xIndex = 0; _xIndex < width; _xIndex++)
         {
+            
             CollapseColumn(_xIndex);
             RefillColumn(_xIndex);
         }
@@ -431,15 +434,32 @@ public class GameBoard : MonoBehaviour
     {
         if (selectedPebble == null)
         {
+            Debug.Log("1");
             selectedPebble = _pebbles;
+            Transform child = selectedPebble.transform.GetChild(0);
+            if (child != null)
+            {
+                child.gameObject.SetActive(true);
+            }
         }
         else if (selectedPebble == _pebbles)
         {
+            Debug.Log("2");
+            selectedPebble = _pebbles;
+            Transform child = selectedPebble.transform.GetChild(0);
+
+            if (child != null)
+            {
+                child.gameObject.SetActive(false);
+            }
+
             selectedPebble = null;
         }
         else if (selectedPebble != _pebbles)
         {
+            Debug.Log("3");
             SwapPebble(selectedPebble, _pebbles);
+            
             selectedPebble = null;
         }
 
@@ -450,7 +470,13 @@ public class GameBoard : MonoBehaviour
         //if not adjacent, return
         if (!isAdjacent(_currentPebble, _targetPebble) || isProcessingSwap)
         {
-
+            selectedPebble = _currentPebble;
+            Transform child = selectedPebble.transform.GetChild(0);
+            if(child != null)
+            {
+                child.gameObject.SetActive(false);
+            }
+            
             return;
         }
 
@@ -466,22 +492,37 @@ public class GameBoard : MonoBehaviour
     {
         yield return new WaitForSeconds(0.5f);
         
+        while (_currentPebble.isMoving || _targetPebble.isMoving)
+        {
+            yield return null;
+        }
 
         if (CheckMatch()) 
-        { 
+        {
             StartCoroutine(ExecuteTurnOnMatchedBoard(true));
         }
         else
         {
             //no match found, swap back
-            DoSwap(_currentPebble, _targetPebble);
-        }
+            DoSwap(_currentPebble,_targetPebble);
 
+            while (_currentPebble.isMoving || _targetPebble.isMoving)
+            {
+                yield return null;
+            }
+        }
+        selectedPebble = null;
         isProcessingSwap = false;
     }
 
     private void DoSwap(Pebbles _currentPebble, Pebbles _targetPebble)
     {
+        selectedPebble = _currentPebble;
+        Transform child = selectedPebble.transform.GetChild(0);
+        if (child != null)
+        {
+            child.gameObject.SetActive(false);
+        }
         //swap in array
         GameObject temp = gameBoard[_currentPebble.xIndex, _currentPebble.yIndex].pebble;
         gameBoard[_currentPebble.xIndex, _currentPebble.yIndex].pebble = gameBoard[_targetPebble.xIndex, _targetPebble.yIndex].pebble;
@@ -511,15 +552,7 @@ public class GameBoard : MonoBehaviour
         return Mathf.Abs(_currentPebble.xIndex - _targetPebble.xIndex) + Mathf.Abs(_currentPebble.yIndex - _targetPebble.yIndex) == 1;
     }
 
-    //public void Wiggle()
-    //{
-    //    StartCoroutine(WiggleCoroutine());
-    //}
 
-    //private IEnumerator WiggleCoroutine()
-    //{
-
-    //}
 }
 
 public class GameResult

@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -32,9 +33,20 @@ public class GameManager : MonoBehaviour
             Instance = this;
             
         }
+        movesText = GameObject.Find("TXT_Moves").GetComponent<TMP_Text>();
+        pointsText = GameObject.Find("TXT_Points").GetComponent<TMP_Text>();
+        winPointsText = GameObject.Find("TXT_Goal").GetComponent<TMP_Text>();
+
+        VicPanel = GameObject.Find("VictoryPanel");
+        DefPanel = GameObject.Find("DefeatPanel");
+
+        VicPanel.SetActive(false);
+        DefPanel.SetActive(false);
+
 
     }
 
+   
 
     private void Update()
     {
